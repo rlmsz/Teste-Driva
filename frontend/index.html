@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Market Intelligence Platform</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+      
+      body, html, #root {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: 'DM Sans', sans-serif;
+        background-color: #0d1117;
+        color: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      @keyframes pulse-ring {
+        0%   { transform: scale(0.8); opacity: 1; }
+        50%  { transform: scale(1.1); opacity: 0.6; }
+        100% { transform: scale(0.8); opacity: 1; }
+      }
+
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); opacity: 1; }
+        50%       { transform: translateY(-8px); opacity: 0.5; }
+      }
+      /* Remove Leaflet click outlines */
+      .leaflet-container:focus,
+      .leaflet-container:focus-visible {
+        outline: none !important;
+      }
+
+      .leaflet-interactive:focus,
+      .leaflet-interactive:focus-visible {
+        outline: none !important;
+      }
+
+      path.leaflet-interactive:focus,
+      path.leaflet-interactive:focus-visible {
+        outline: none !important;
+      }
+
+      /* Ensure tooltips are always on top */
+      .leaflet-tooltip-pane {
+        z-index: 1000 !important;
+      }
+      .leaflet-tooltip {
+        z-index: 1001 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

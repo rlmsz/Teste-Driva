@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: market-intel-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - CORS_ORIGIN=http://localhost:3000
+    networks:
+      - market-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build: ./frontend
+    container_name: market-intel-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    networks:
+      - market-net
+    depends_on:
+      backend:
+        condition: service_healthy
+
+networks:
+  market-net:
+    driver: bridge
