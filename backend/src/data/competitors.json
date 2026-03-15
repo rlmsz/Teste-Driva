@@ -1,0 +1,15 @@
+[
+  {"id": "c1", "name": "Concorrente Alpha - SP", "city": "São Paulo", "uf": "SP", "lat": -23.5595, "lng": -46.6623, "openedAt": "2020-05-15"},
+  {"id": "c2", "name": "Concorrente Beta - SP", "city": "Campinas", "uf": "SP", "lat": -22.9055, "lng": -47.0608, "openedAt": "2021-08-20"},
+  {"id": "c3", "name": "Concorrente Gamma - RJ", "city": "Rio de Janeiro", "uf": "RJ", "lat": -22.9035, "lng": -43.2096, "openedAt": "2019-12-10"},
+  {"id": "c4", "name": "Concorrente Delta - MG", "city": "Belo Horizonte", "uf": "MG", "lat": -19.9219, "lng": -43.9364, "openedAt": "2023-04-12"},
+  {"id": "c5", "name": "Concorrente Epsilon - PR", "city": "Curitiba", "uf": "PR", "lat": -25.4297, "lng": -49.2719, "openedAt": "2022-11-30"},
+  {"id": "c6", "name": "Concorrente Zeta - RS", "city": "Porto Alegre", "uf": "RS", "lat": -30.0331, "lng": -51.2189, "openedAt": "2025-01-15"},
+  {"id": "c7", "name": "Concorrente Eta - SC", "city": "Florianópolis", "uf": "SC", "lat": -27.5969, "lng": -48.5495, "openedAt": "2024-06-25"},
+  {"id": "c8", "name": "Concorrente Theta - DF", "city": "Brasília", "uf": "DF", "lat": -15.7934, "lng": -47.8825, "openedAt": "2023-09-18"},
+  {"id": "c9", "name": "Concorrente Iota - BA", "city": "Salvador", "uf": "BA", "lat": -12.9704, "lng": -38.5024, "openedAt": "2021-02-14"},
+  {"id": "c10", "name": "Concorrente Kappa - CE", "city": "Fortaleza", "uf": "CE", "lat": -3.7162, "lng": -38.5423, "openedAt": "2022-07-05"},
+  {"id": "c11", "name": "Concorrente Lambda - AM", "city": "Manaus", "uf": "AM", "lat": -3.1180, "lng": -60.0207, "openedAt": "2020-10-22"},
+  {"id": "c12", "name": "Concorrente Mu - PE", "city": "Recife", "uf": "PE", "lat": -8.0568, "lng": -34.8820, "openedAt": "2023-12-30"},
+  {"id": "c13", "name": "Concorrente Nu - GO", "city": "Goiânia", "uf": "GO", "lat": -16.6859, "lng": -49.2638, "openedAt": "2022-03-12"}
+]

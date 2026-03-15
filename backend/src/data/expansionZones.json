@@ -1,0 +1,15 @@
+[
+  {"uf": "MT", "priority": "High", "potentialScore": 85, "reason": "Crescimento do agronegócio.", "period": "all"},
+  {"uf": "MT", "priority": "Medium", "potentialScore": 72, "reason": "Expansão recente.", "period": "12m"},
+  {"uf": "GO", "priority": "High", "potentialScore": 82, "reason": "Eixo Brasília-Goiânia.", "period": "all"},
+  {"uf": "GO", "priority": "High", "potentialScore": 82, "reason": "Consolidado.", "period": "24m"},
+  {"uf": "AM", "priority": "Medium", "potentialScore": 65, "reason": "Polo industrial.", "period": "all"},
+  {"uf": "PE", "priority": "High", "potentialScore": 72, "reason": "Hub logístico.", "period": "all"},
+  {"uf": "PE", "priority": "Medium", "potentialScore": 60, "reason": "Novas frentes.", "period": "12m"},
+  {"uf": "BA", "priority": "High", "potentialScore": 75, "reason": "Grande mercado consumidor.", "period": "all"},
+  {"uf": "BA", "priority": "Medium", "potentialScore": 65, "reason": "Reestruturação.", "period": "24m"},
+  {"uf": "CE", "priority": "Medium", "potentialScore": 70, "reason": "Crescimento de serviços.", "period": "all"},
+  {"uf": "SC", "priority": "High", "potentialScore": 94, "reason": "Alto poder aquisitivo.", "period": "all"},
+  {"uf": "RS", "priority": "Medium", "potentialScore": 90, "reason": "Estabilização.", "period": "all"},
+  {"uf": "PA", "priority": "Low", "potentialScore": 60, "reason": "Logística complexa.", "period": "all"}
+]

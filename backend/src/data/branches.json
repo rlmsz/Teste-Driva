@@ -1,0 +1,20 @@
+[
+  {"id": "b1", "name": "Filial São Paulo Centro", "city": "São Paulo", "uf": "SP", "lat": -23.55052, "lng": -46.633308, "openedAt": "2020-01-15"},
+  {"id": "b2", "name": "Filial Campinas", "city": "Campinas", "uf": "SP", "lat": -22.9099, "lng": -47.0626, "openedAt": "2021-03-22"},
+  {"id": "b3", "name": "Filial Rio de Janeiro - Barra", "city": "Rio de Janeiro", "uf": "RJ", "lat": -23.0003, "lng": -43.3659, "openedAt": "2019-11-10"},
+  {"id": "b4", "name": "Filial Belo Horizonte", "city": "Belo Horizonte", "uf": "MG", "lat": -19.9167, "lng": -43.9345, "openedAt": "2025-06-05"},
+  {"id": "b5", "name": "Filial Curitiba", "city": "Curitiba", "uf": "PR", "lat": -25.4284, "lng": -49.2733, "openedAt": "2024-08-12"},
+  {"id": "b6", "name": "Filial Porto Alegre", "city": "Porto Alegre", "uf": "RS", "lat": -30.0346, "lng": -51.2177, "openedAt": "2020-02-28"},
+  {"id": "b7", "name": "Filial Florianópolis", "city": "Florianópolis", "uf": "SC", "lat": -27.5954, "lng": -48.5480, "openedAt": "2022-01-20"},
+  {"id": "b8", "name": "Filial Brasília", "city": "Brasília", "uf": "DF", "lat": -15.7942, "lng": -47.8822, "openedAt": "2018-05-15"},
+  {"id": "b9", "name": "Filial Goiânia", "city": "Goiânia", "uf": "GO", "lat": -16.6869, "lng": -49.2648, "openedAt": "2021-11-30"},
+  {"id": "b10", "name": "Filial Salvador", "city": "Salvador", "uf": "BA", "lat": -12.9714, "lng": -38.5014, "openedAt": "2020-09-18"},
+  {"id": "b11", "name": "Filial Fortaleza", "city": "Fortaleza", "uf": "CE", "lat": -3.7172, "lng": -38.5433, "openedAt": "2022-04-05"},
+  {"id": "b12", "name": "Filial Manaus", "city": "Manaus", "uf": "AM", "lat": -3.1190, "lng": -60.0217, "openedAt": "2021-07-25"},
+  {"id": "b13", "name": "Filial Belém", "city": "Belém", "uf": "PA", "lat": -1.4558, "lng": -48.4902, "openedAt": "2023-01-10"},
+  {"id": "b14", "name": "Filial Cuiabá", "city": "Cuiabá", "uf": "MT", "lat": -15.6014, "lng": -56.0979, "openedAt": "2022-06-14"},
+  {"id": "b15", "name": "Filial Vitória", "city": "Vitória", "uf": "ES", "lat": -20.3155, "lng": -40.3128, "openedAt": "2021-02-10"},
+  {"id": "b16", "name": "Filial Ribeirão Preto", "city": "Ribeirão Preto", "uf": "SP", "lat": -21.1704, "lng": -47.8103, "openedAt": "2025-03-05"},
+  {"id": "b17", "name": "Filial Recife", "city": "Recife", "uf": "PE", "lat": -8.0578, "lng": -34.8830, "openedAt": "2024-10-15"},
+  {"id": "b18", "name": "Filial Joinville", "city": "Joinville", "uf": "SC", "lat": -26.3045, "lng": -48.8456, "openedAt": "2026-01-20"}
+]
