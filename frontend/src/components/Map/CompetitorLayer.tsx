@@ -1,5 +1,5 @@
 import React from 'react';
-import { Marker, Popup } from 'react-leaflet';
+import { Marker, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { Competitor } from '../../types';
 
@@ -45,12 +45,12 @@ const CompetitorLayer: React.FC<CompetitorLayerProps> = ({ data, regionFilter, s
           position={[comp.lat, comp.lng]} 
           icon={competitorIcon}
         >
-          <Popup>
-            <div style={{ color: 'var(--text-main)', backgroundColor: 'var(--bg-card)', padding: '4px', borderRadius: '4px' }}>
-              <strong>{comp.name}</strong> (Concorrente)<br />
-              {comp.city} - {comp.uf}
+          <Tooltip direction="top" opacity={1} sticky={true} className="custom-map-tooltip">
+            <div>
+              <strong style={{ color: '#ef4444' }}>{comp.name}</strong> <small>(Concorrente)</small><br />
+              <span>{comp.city} - {comp.uf}</span>
             </div>
-          </Popup>
+          </Tooltip>
         </Marker>
       ))}
     </>

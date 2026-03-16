@@ -30,12 +30,12 @@ const MarketHeatLayer: React.FC<MarketHeatLayerProps> = ({
     }
 
     return score > 80
-      ? '#10b981' // Emerald 500
+      ? '#00ffaa' // Vibrant Primary-like Cyan/Emerald
       : score > 60
-        ? '#fbbf24' // Amber 400
+        ? '#ffcc00' // Gold
         : score > 40
-          ? '#fb923c' // Orange 400
-          : '#f87171'; // Red 400
+          ? '#ff8800' // Orange
+          : '#ff4444'; // Red vibrant
   };
 
   const style = (feature: any) => {

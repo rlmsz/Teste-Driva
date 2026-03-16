@@ -79,11 +79,11 @@ const DemandBubbleLayer: React.FC<DemandBubbleLayerProps> = ({ data, states, reg
               fillOpacity: 0.6,
             }}
           >
-            <Tooltip direction="top" opacity={1} sticky={false} className="demand-bubble-tooltip">
-              <div style={{ color: 'var(--text-main)', lineHeight: '1.4' }}>
+            <Tooltip direction="top" opacity={1} sticky={true} className="custom-map-tooltip">
+              <div style={{ lineHeight: '1.4' }}>
                 <strong>{item.uf} — Demanda Estimada</strong>
                 <br />
-                Volume: <strong>{item.volume.toLocaleString('pt-BR')}</strong>
+                <span style={{ color: 'var(--primary)' }}>Volume: {item.volume.toLocaleString('pt-BR')} un</span>
               </div>
             </Tooltip>
           </Circle>

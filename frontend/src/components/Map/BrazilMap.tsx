@@ -17,6 +17,7 @@ import DemandBubbleLayer from './DemandBubbleLayer';
 import ExpansionZoneLayer from './ExpansionZoneLayer';
 import CompetitorLayer from './CompetitorLayer';
 import { useTheme } from '../../contexts/ThemeContext';
+import { Target } from 'lucide-react';
 
 interface BrazilMapProps {
   layers: LayerConfig[];
@@ -72,7 +73,7 @@ const PotentialLegend = () => (
   </div>
 );
 
-const ExpansionLegend = ({ theme }: { theme: string }) => {
+const ExpansionLegend = ({ theme, isPotentialActive }: { theme: string; isPotentialActive?: boolean }) => {
   const colors =
     theme === 'light'
       ? ([
@@ -94,13 +95,19 @@ const ExpansionLegend = ({ theme }: { theme: string }) => {
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <div
               style={{
-                width: 10,
-                height: 10,
+                width: 16,
+                height: 16,
                 backgroundColor: color,
-                borderRadius: 2,
-                border: '1px dashed var(--bg-card)',
+                borderRadius: '50%',
+                border: '1px solid #ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: isPotentialActive ? `0 0 5px ${color}` : 'none',
               }}
-            />
+            >
+              <Target size={10} color="#ffffff" strokeWidth={3} />
+            </div>
             <span style={{ fontSize: 9 }}>{label}</span>
           </div>
         ))}
@@ -209,7 +216,11 @@ const MapLegend = ({ layers }: { layers: LayerConfig[] }) => {
             }}
           >
             {LegendItem ? (
-              <LegendItem theme={theme} isMobile={isMobile} />
+              <LegendItem 
+                theme={theme} 
+                isMobile={isMobile} 
+                isPotentialActive={layers.find(l => l.id === 'potential')?.active} 
+              />
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <div
@@ -311,18 +322,18 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
       const isInActiveRegion = regionFilter && stateInfo?.region === regionFilter;
 
       return {
-        fillColor: isSelected
-          ? 'var(--primary)'
-          : isInActiveRegion
-            ? 'transparent'
-            : 'var(--bg-dark)',
-        weight: isSelected ? 3 : isHovered ? 2 : 1,
+        fillColor: 'var(--bg-dark)',
+        weight: isSelected ? 3 : isInActiveRegion ? 2.5 : isHovered ? 1.5 : 1.2,
         opacity: 1,
-        color: isSelected ? 'var(--highlight)' : isHovered ? 'var(--text-dim)' : 'var(--map-border)',
-        fillOpacity: isSelected ? 0.9 : isHovered ? 0.8 : isInActiveRegion ? 0 : 0.7,
+        color: isSelected 
+          ? 'var(--highlight)' 
+          : isInActiveRegion 
+            ? (theme === 'dark' ? '#ffffff' : '#30363d')
+            : (theme === 'dark' ? '#444c56' : '#94a3b8'),
+        fillOpacity: isSelected ? 0.9 : (regionFilter ? (isInActiveRegion ? 0 : 0.85) : 0),
       };
     },
-    [regionFilter, hoveredUf],
+    [regionFilter, hoveredUf, theme],
   );
 
   useEffect(() => {
@@ -440,6 +451,7 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <MapLegend layers={layers} />
+      
       <MapContainer
         center={BRAZIL_CENTER}
         zoom={4}
@@ -495,6 +507,7 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
                 statesGeoJson={brazilStates}
                 regionFilter={regionFilter}
                 states={states}
+                isPotentialActive={!!isLayerActive('potential')}
               />
             )}
             {isLayerActive('competitors') && (

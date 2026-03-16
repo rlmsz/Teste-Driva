@@ -1,5 +1,5 @@
 import React from 'react';
-import { Marker, Popup } from 'react-leaflet';
+import { Marker, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { Branch } from '../../types';
 
@@ -45,13 +45,13 @@ const BranchLayer: React.FC<BranchLayerProps> = ({ data, regionFilter, searchFil
           position={[branch.lat, branch.lng]} 
           icon={branchIcon}
         >
-          <Popup>
-            <div style={{ color: 'var(--text-main)', backgroundColor: 'var(--bg-card)', padding: '4px', borderRadius: '4px' }}>
-              <strong>{branch.name}</strong><br />
-              {branch.city} - {branch.uf}<br />
-              <small>Inaugurada em: {branch.openedAt}</small>
+          <Tooltip direction="top" opacity={1} sticky={true} className="custom-map-tooltip">
+            <div>
+              <strong style={{ color: 'var(--primary)' }}>{branch.name}</strong><br />
+              <span>{branch.city} - {branch.uf}</span><br />
+              <small style={{ color: 'var(--text-dim)', fontSize: '10px' }}>Inaugurada em: {branch.openedAt}</small>
             </div>
-          </Popup>
+          </Tooltip>
         </Marker>
       ))}
     </>
