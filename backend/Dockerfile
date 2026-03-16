@@ -12,15 +12,17 @@ RUN npm run build
 # Production stage
 FROM node:20-alpine
 
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --production
+RUN npm install --omit=dev
 
 # Copy built code
 COPY --from=build /app/dist ./dist
 
-# Copy data into dist/data so the compiled code (dist/routes/*.js) 
+# Copy data into dist/data so the compiled code (dist/routes/*.js)
 # can find it at relative path ../data/
 COPY --from=build /app/src/data ./dist/data
 

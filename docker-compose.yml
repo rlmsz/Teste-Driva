@@ -1,14 +1,16 @@
 version: '3.8'
-
+ 
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: market-intel-backend
     ports:
       - "8000:8000"
     environment:
       - PORT=8000
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
     networks:
       - market-net
     healthcheck:
@@ -17,20 +19,22 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-
+ 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
     container_name: market-intel-frontend
     ports:
       - "3000:3000"
-    environment:
-      - VITE_API_URL=http://localhost:8000/api
     networks:
       - market-net
     depends_on:
       backend:
         condition: service_healthy
-
+ 
 networks:
   market-net:
     driver: bridge
