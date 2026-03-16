@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   Branch,
@@ -447,7 +447,9 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
         maxZoom={10}
         style={{ width: '100%', height: '100%', background: 'var(--bg-dark)' }}
         attributionControl={false}
+        zoomControl={false}
       >
+        <ZoomControl position="bottomright" />
         <MapEvents onClick={() => onStateClick(null)} />
         {theme === 'dark' ? (
           <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />

@@ -145,7 +145,8 @@ const App: React.FC = () => {
           style={{
             position: 'absolute',
             top: isMobile ? 12 : 16,
-            right: isMobile ? 12 : 16,
+            left: isMobile ? undefined : 316,
+            right: isMobile ? 12 : undefined,
             zIndex: 2000,
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
