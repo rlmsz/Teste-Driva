@@ -9,12 +9,7 @@ interface FilterPanelProps {
   onPeriodChange: (period: string) => void;
 }
 
-const REGIONS = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
-const PERIODS = [
-  { id: 'all', label: 'Histórico Completo' },
-  { id: '12m', label: 'Últimos 12 Meses' },
-  { id: '24m', label: 'Últimos 24 Meses' },
-];
+import { REGIONS, PERIODS } from '../../constants';
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ 
   activeRegion, 

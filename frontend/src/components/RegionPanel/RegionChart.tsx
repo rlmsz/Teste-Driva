@@ -11,6 +11,10 @@ import {
 } from 'recharts';
 import { StateData, MarketPotential, DemandData } from '../../types';
 import { TrendingUp, Activity } from 'lucide-react';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import ChartTooltip from '../Common/ChartTooltip';
+import { getPotential } from '../../utils/mapUtils';
+import { REGIONS } from '../../constants';
 
 interface RegionChartProps {
   state: StateData;
@@ -20,36 +24,25 @@ interface RegionChartProps {
 }
 
 const RegionChart: React.FC<RegionChartProps> = ({ state, allStates, marketPotential, demand }) => {
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
-
-  React.useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   // Helpers para pegar valores dinâmicos
-  const getPotential = (uf: string, staticScore: number) =>
-    marketPotential.find(p => p.uf === uf)?.score ?? staticScore;
-  const getDemand = (uf: string) => demand.find(d => d.uf === uf)?.volume ?? 0;
-
   // 1. DADOS: Ranking de Estados na mesma Região
   const peerStates = allStates.filter(s => s.region === state.region);
   const peerData = peerStates
     .map(s => ({
       uf: s.uf,
       name: s.name,
-      potential: getPotential(s.uf, s.potentialScore),
+      potential: getPotential(s.uf, marketPotential, s.potentialScore),
       isCurrent: s.uf === state.uf,
     }))
     .sort((a, b) => b.potential - a.potential);
 
   // 2. DADOS: Comparativo entre Regiões (Nacional)
-  const REGIONS = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
   const regionalData = REGIONS.map(reg => {
     const statesInReg = allStates.filter(s => s.region === reg);
     const avgPot =
-      statesInReg.reduce((acc, s) => acc + getPotential(s.uf, s.potentialScore), 0) /
+      statesInReg.reduce((acc, s) => acc + getPotential(s.uf, marketPotential, s.potentialScore), 0) /
       (statesInReg.length || 1);
     return {
       name: reg,
@@ -57,44 +50,6 @@ const RegionChart: React.FC<RegionChartProps> = ({ state, allStates, marketPoten
       isCurrentRegion: reg === state.region,
     };
   }).sort((a, b) => b.potential - a.potential);
-
-  const CustomTooltip = ({
-    active,
-    payload,
-    label,
-    prefix = '',
-    valueSuffix = '',
-    valueName = '',
-  }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div
-          style={{
-            backgroundColor: 'var(--tooltip-bg)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            padding: '10px 12px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-          }}
-        >
-          <p style={{ color: 'var(--text-main)', fontWeight: 'bold', margin: '0 0 4px 0', fontSize: 13 }}>
-            {prefix}
-            {label || payload[0].payload.uf || payload[0].payload.name}
-          </p>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 12 }}>
-            <span style={{ color: payload[0].color || payload[0].fill, fontWeight: 'medium' }}>
-              {payload[0].value.toLocaleString('pt-BR')}
-              {valueSuffix}
-            </span>
-            <span style={{ color: 'var(--text-dim)' }}>{valueName}</span>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -144,7 +99,7 @@ const RegionChart: React.FC<RegionChartProps> = ({ state, allStates, marketPoten
                 )}
               />
               <Tooltip
-                content={<CustomTooltip valueSuffix=" pts" valueName="Potencial" />}
+                content={<ChartTooltip valueSuffix=" pts" valueName="Potencial" />}
                 cursor={{ fill: 'var(--border)', opacity: 0.4 }}
               />
               <Bar dataKey="potential" radius={[0, 4, 4, 0]} barSize={16}>
@@ -207,7 +162,7 @@ const RegionChart: React.FC<RegionChartProps> = ({ state, allStates, marketPoten
                 )}
               />
               <Tooltip
-                content={<CustomTooltip valueSuffix=" pts" valueName="Média Região" />}
+                content={<ChartTooltip valueSuffix=" pts" valueName="Média Região" />}
                 cursor={{ fill: 'var(--border)', opacity: 0.4 }}
               />
               <Bar dataKey="potential" radius={[0, 4, 4, 0]} barSize={14}>

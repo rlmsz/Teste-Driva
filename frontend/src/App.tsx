@@ -4,6 +4,7 @@ import BrazilMap from './components/Map/BrazilMap';
 import RegionPanel from './components/RegionPanel/RegionPanel';
 import GlobalDashboard from './components/Dashboard/GlobalDashboard';
 import { useMapData } from './hooks/useMapData';
+import { useIsMobile } from './hooks/useIsMobile';
 import { StateData, LayerConfig } from './types';
 import { useTheme } from './contexts/ThemeContext';
 import { Sun, Moon } from 'lucide-react';
@@ -28,19 +29,13 @@ const App: React.FC = () => {
   
   const [searchFilter, setSearchFilter] = useState('');
 
-  // Sync with localStorage
+  // Single Sync with localStorage
   React.useEffect(() => {
     if (regionFilter) localStorage.setItem('regionFilter', regionFilter);
     else localStorage.removeItem('regionFilter');
-  }, [regionFilter]);
-
-  React.useEffect(() => {
     localStorage.setItem('periodFilter', periodFilter);
-  }, [periodFilter]);
-
-  React.useEffect(() => {
     localStorage.setItem('viewMode', viewMode);
-  }, [viewMode]);
+  }, [regionFilter, periodFilter, viewMode]);
   
   const { branches, marketPotential, demand, expansionZones, competitors, states, loading, error } = useMapData(null, periodFilter);
 
@@ -49,18 +44,13 @@ const App: React.FC = () => {
   };
 
 
+  const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
 
+  // Close mobile sidebar on resize to desktop
   React.useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (!mobile) setIsSidebarOpen(false);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (!isMobile) setIsSidebarOpen(false);
+  }, [isMobile]);
 
   if (error) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: 'var(--bg-dark)', color: 'var(--primary)', flexDirection: 'column', gap: 12 }}>
@@ -124,9 +114,7 @@ const App: React.FC = () => {
         activeRegion={regionFilter}
         activePeriod={periodFilter}
         states={states}
-        // @ts-ignore - Will fix in Sidebar.tsx
         isOpen={isMobile ? isSidebarOpen : true}
-        // @ts-ignore - Will fix in Sidebar.tsx
         onClose={() => setIsSidebarOpen(false)}
       />
       
@@ -203,7 +191,7 @@ const App: React.FC = () => {
             regionFilter={regionFilter}
             searchFilter={searchFilter}
             selectedState={selectedState}
-            onStateClick={(state) => {
+            onStateClick={(state: StateData | null) => {
               setSelectedState(state);
               if (isMobile) setIsSidebarOpen(false);
             }}

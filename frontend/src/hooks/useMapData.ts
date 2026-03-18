@@ -3,40 +3,41 @@ import { Branch, MarketPotential, DemandData, ExpansionZone, Competitor, StateDa
 import * as api from '../services/api';
 
 export const useMapData = (region?: string | null, period?: string) => {
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [marketPotential, setMarketPotential] = useState<MarketPotential[]>([]);
-  const [demand, setDemand] = useState<DemandData[]>([]);
-  const [expansionZones, setExpansionZones] = useState<ExpansionZone[]>([]);
-  const [competitors, setCompetitors] = useState<Competitor[]>([]);
-  const [states, setStates] = useState<StateData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState({
+    branches: [] as Branch[],
+    marketPotential: [] as MarketPotential[],
+    demand: [] as DemandData[],
+    expansionZones: [] as ExpansionZone[],
+    competitors: [] as Competitor[],
+    states: [] as StateData[],
+    loading: true,
+    error: null as string | null,
+  });
 
   useEffect(() => {
     let isMounted = true;
 
     const loadData = async () => {
       try {
-        setLoading(true);
+        setState(prev => ({ ...prev, loading: true }));
         const response = await api.fetchSummary(region, period);
         
         if (isMounted) {
           const { data } = response.data;
-          setBranches(data.branches);
-          setMarketPotential(data.marketPotential);
-          setDemand(data.demand);
-          setExpansionZones(data.expansionZones);
-          setCompetitors(data.competitors);
-          setStates(data.states);
+          setState({
+            ...data,
+            loading: false,
+            error: null,
+          });
         }
       } catch (err) {
         if (isMounted) {
-          setError('Falha ao carregar dados consolidados');
+          setState(prev => ({ 
+            ...prev, 
+            error: 'Falha ao carregar dados consolidados',
+            loading: false 
+          }));
           console.error(err);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
         }
       }
     };
@@ -48,5 +49,5 @@ export const useMapData = (region?: string | null, period?: string) => {
     };
   }, [region, period]);
 
-  return { branches, marketPotential, demand, expansionZones, competitors, states, loading, error };
+  return state;
 };

@@ -2,6 +2,10 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import { StateData, MarketPotential, DemandData, Branch, Competitor } from '../../types';
 import { Globe, TrendingUp, Users, Store } from 'lucide-react';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import ChartTooltip from '../Common/ChartTooltip';
+import { getPotential, getDemand } from '../../utils/mapUtils';
+import { REGIONS } from '../../constants';
 
 interface GlobalDashboardProps {
   allStates: StateData[];
@@ -15,18 +19,14 @@ interface GlobalDashboardProps {
 const GlobalDashboard: React.FC<GlobalDashboardProps> = ({ 
   allStates, marketPotential, demand, branches, competitors, activeRegion 
 }) => {
-  const REGIONS = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
 
-  // Helper para métricas dinâmicas
-  const getPotential = (uf: string, staticScore: number) => marketPotential.find(p => p.uf === uf)?.score ?? staticScore;
-  const getDemand = (uf: string) => demand.find(d => d.uf === uf)?.volume ?? 0;
 
   // 1. Dados Regionais (Imutável)
   const regionalData = React.useMemo(() => {
     return REGIONS.map(reg => {
       const statesInReg = allStates.filter(s => s.region === reg);
-      const avgPot = statesInReg.reduce((acc, s) => acc + getPotential(s.uf, s.potentialScore), 0) / (statesInReg.length || 1);
-      const totalDemand = statesInReg.reduce((acc, s) => acc + getDemand(s.uf), 0);
+      const avgPot = statesInReg.reduce((acc, s) => acc + getPotential(s.uf, marketPotential, s.potentialScore), 0) / (statesInReg.length || 1);
+      const totalDemand = statesInReg.reduce((acc, s) => acc + getDemand(s.uf, demand), 0);
       const totalBranches = branches.filter(b => statesInReg.some(s => s.uf === b.uf)).length;
       
       return {
@@ -41,41 +41,8 @@ const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
   const topPotential = regionalData[0];
   const topDemand = [...regionalData].sort((a, b) => b.demand - a.demand)[0];
 
-  const CustomTooltip: React.FC<{
-    active?: boolean;
-    payload?: any[];
-    label?: string;
-    prefix?: string;
-    valueSuffix?: string;
-    valueName?: string;
-  }> = ({ active, payload, label, prefix = 'Região: ', valueSuffix = '', valueName = '' }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      const name = label || payload[0].name || data.name;
-      const value = payload[0].value;
 
-      return (
-        <div style={{ backgroundColor: 'var(--tooltip-bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 12px', boxShadow: '0 4px 16px rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
-          <p style={{ color: 'var(--text-main)', fontWeight: 'bold', margin: '0 0 4px 0', fontSize: 13 }}>{prefix}{name}</p>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 12 }}>
-            <span style={{ color: payload[0].color || payload[0].fill, fontWeight: 'medium' }}>
-              {value.toLocaleString('pt-BR')}{valueSuffix}
-            </span>
-            <span style={{ color: 'var(--text-dim)' }}>{valueName}</span>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
-
-  React.useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   return (
     <div style={{ padding: isMobile ? 20 : 40, color: 'var(--text-main)', height: '100%', overflowY: 'auto' }}>
@@ -109,7 +76,7 @@ const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
                   interval={0}
                 />
                 <YAxis hide domain={[0, 100]} />
-                <Tooltip content={<CustomTooltip valueSuffix=" pts" valueName="Média de Potencial" />} cursor={{ fill: 'var(--border)', opacity: 0.4 }} />
+                <Tooltip content={<ChartTooltip prefix="Região: " valueSuffix=" pts" valueName="Média de Potencial" />} cursor={{ fill: 'var(--border)', opacity: 0.4 }} />
                 <Bar dataKey="potential" radius={[4, 4, 0, 0]} barSize={isMobile ? 24 : 40}>
                   {regionalData.map((entry, index) => (
                     <Cell 
@@ -154,7 +121,7 @@ const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
                     />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip valueSuffix=" unidades" valueName="Demanda Total" />} />
+                <Tooltip content={<ChartTooltip prefix="Região: " valueSuffix=" unidades" valueName="Demanda Total" />} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -177,7 +144,7 @@ const GlobalDashboard: React.FC<GlobalDashboardProps> = ({
                   interval={0}
                 />
                 <YAxis hide />
-                <Tooltip content={<CustomTooltip valueSuffix=" un" valueName="Lojas Ativas" />} cursor={{ fill: 'var(--border)', opacity: 0.4 }} />
+                <Tooltip content={<ChartTooltip prefix="Região: " valueSuffix=" un" valueName="Lojas Ativas" />} cursor={{ fill: 'var(--border)', opacity: 0.4 }} />
                 <Bar dataKey="branches" radius={[4, 4, 0, 0]} barSize={isMobile ? 24 : 40} animationDuration={1000}>
                   {regionalData.map((entry, index) => (
                     <Cell 

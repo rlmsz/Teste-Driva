@@ -46,10 +46,10 @@ const MarketHeatLayer: React.FC<MarketHeatLayerProps> = ({
 
     return {
       fillColor: potential && isInRegion ? getColor(potential.score) : 'transparent',
-      weight: potential && isInRegion ? 1 : 0,
-      color: 'var(--map-border)', // Theme-aware border
-      fillOpacity: potential && isInRegion ? (theme === 'dark' ? 0.8 : 0.7) : 0,
-      opacity: potential && isInRegion ? 1 : 0,
+      weight: 0,
+      color: 'transparent',
+      fillOpacity: potential && isInRegion ? (theme === 'dark' ? 0.75 : 0.65) : 0,
+      opacity: 0,
       pointerEvents: 'none',
     };
   };

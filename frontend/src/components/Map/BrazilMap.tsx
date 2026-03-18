@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMap, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, useMap, ZoomControl, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   Branch,
@@ -17,7 +18,9 @@ import DemandBubbleLayer from './DemandBubbleLayer';
 import ExpansionZoneLayer from './ExpansionZoneLayer';
 import CompetitorLayer from './CompetitorLayer';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { Target } from 'lucide-react';
+import { BRAZIL_CENTER } from '../../constants';
 
 interface BrazilMapProps {
   layers: LayerConfig[];
@@ -33,8 +36,6 @@ interface BrazilMapProps {
   onStateClick: (state: StateData | null) => void;
 }
 
-const BRAZIL_CENTER: [number, number] = [-14.235, -51.9253];
-
 // ---------------------------------------------------------------------------
 // Componentes de Legenda específicos
 // ---------------------------------------------------------------------------
@@ -47,8 +48,7 @@ const PotentialLegend = () => (
           width: '100%',
           height: 10,
           borderRadius: 4,
-          background:
-            'linear-gradient(to right, #991b1b, #c2410c, #b45309, #065f46)',
+          background: 'linear-gradient(to right, #991b1b, #c2410c, #b45309, #065f46)',
         }}
         className="potential-gradient"
       />
@@ -73,7 +73,13 @@ const PotentialLegend = () => (
   </div>
 );
 
-const ExpansionLegend = ({ theme, isPotentialActive }: { theme: string; isPotentialActive?: boolean }) => {
+const ExpansionLegend = ({
+  theme,
+  isPotentialActive,
+}: {
+  theme: string;
+  isPotentialActive?: boolean;
+}) => {
   const colors =
     theme === 'light'
       ? ([
@@ -163,13 +169,7 @@ const LAYER_LEGENDS: Record<string, (props: any) => React.ReactNode> = {
 
 const MapLegend = ({ layers }: { layers: LayerConfig[] }) => {
   const { theme } = useTheme();
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
-
-  React.useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   const active = layers.filter(l => l.active);
   if (active.length === 0) return null;
@@ -216,10 +216,10 @@ const MapLegend = ({ layers }: { layers: LayerConfig[] }) => {
             }}
           >
             {LegendItem ? (
-              <LegendItem 
-                theme={theme} 
-                isMobile={isMobile} 
-                isPotentialActive={layers.find(l => l.id === 'potential')?.active} 
+              <LegendItem
+                theme={theme}
+                isMobile={isMobile}
+                isPotentialActive={layers.find(l => l.id === 'potential')?.active}
               />
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -242,25 +242,39 @@ const MapLegend = ({ layers }: { layers: LayerConfig[] }) => {
 };
 
 // ---------------------------------------------------------------------------
-// Captura cliques no fundo do mapa para desselecionar estados
+// Hooks de eventos do mapa
 // ---------------------------------------------------------------------------
 const MapEvents = ({ onClick }: { onClick: () => void }) => {
-  const map = useMap();
-  useEffect(() => {
-    const handleMapClick = (e: any) => {
+  useMapEvents({
+    click: e => {
       if (
-        e.originalEvent.target === map.getContainer() ||
+        (e.originalEvent.target as HTMLElement).classList.contains('leaflet-container') ||
         ((e.originalEvent.target as any).tagName === 'path' &&
           !(e.originalEvent.target as any).classList.contains('leaflet-interactive'))
       ) {
         onClick();
       }
-    };
-    map.on('click', handleMapClick);
-    return () => {
-      map.off('click', handleMapClick);
-    };
-  }, [map, onClick]);
+    },
+  });
+  return null;
+};
+
+// Componente para inicializar Map Panes customs (precisa estar dentro do MapContainer)
+const MapInitializer = () => {
+  const map = useMap();
+  const paneCreated = useRef(false);
+
+  useEffect(() => {
+    if (!paneCreated.current && map) {
+      if (!map.getPane('borderPane')) {
+        const pane = map.createPane('borderPane');
+        pane.style.zIndex = '550';
+        // Removido pointerEvents: 'none' para que os estados no topo possam ser clicados
+      }
+      paneCreated.current = true;
+    }
+  }, [map]);
+
   return null;
 };
 
@@ -281,59 +295,79 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
   onStateClick,
 }) => {
   const { theme } = useTheme();
-  const isLayerActive = (id: string) => layers.find(l => l.id === id)?.active;
+
+  const isLayerActive = (id: string) => layers.find((l: any) => l.id === id)?.active;
   const geoJsonRef = useRef<any>(null);
-  const [hoveredUf, setHoveredUf] = React.useState<string | null>(null);
 
-  // --- Refs para evitar stale closures nos handlers do Leaflet ---
-  const selectedStateRef = useRef(selectedState);
-  const onStateClickRef = useRef(onStateClick);
-  const statesRef = useRef(states);
-  const marketPotentialRef = useRef(marketPotential);
-  const demandRef = useRef(demand);
-  const layersRef = useRef(layers);
+  // --- Props Ref para handlers estáveis ---
+  const propsRef = useRef({
+    selectedState,
+    onStateClick,
+    states,
+    marketPotential,
+    demand,
+    layers,
+    theme,
+    regionFilter,
+    searchFilter,
+  });
 
   useEffect(() => {
-    selectedStateRef.current = selectedState;
-  }, [selectedState]);
-  useEffect(() => {
-    onStateClickRef.current = onStateClick;
-  }, [onStateClick]);
-  useEffect(() => {
-    statesRef.current = states;
-  }, [states]);
-  useEffect(() => {
-    marketPotentialRef.current = marketPotential;
-  }, [marketPotential]);
-  useEffect(() => {
-    demandRef.current = demand;
-  }, [demand]);
-  useEffect(() => {
-    layersRef.current = layers;
-  }, [layers]);
+    propsRef.current = {
+      selectedState,
+      onStateClick,
+      states,
+      marketPotential,
+      demand,
+      layers,
+      theme,
+      regionFilter,
+      searchFilter,
+    };
+  }, [
+    selectedState,
+    onStateClick,
+    states,
+    marketPotential,
+    demand,
+    layers,
+    theme,
+    regionFilter,
+    searchFilter,
+  ]);
 
-  // Computa o estilo completo do feature, incluindo estado de hover.
   const getStyle = useCallback(
     (feature: any) => {
+      const { states: sList, selectedState: sel, regionFilter: rf, theme: t } = propsRef.current;
       const uf = feature.properties.SIGLA;
-      const stateInfo = statesRef.current.find(s => s.uf === uf);
-      const isSelected = selectedStateRef.current?.uf === uf;
-      const isHovered = hoveredUf === uf;
-      const isInActiveRegion = regionFilter && stateInfo?.region === regionFilter;
+      const stateInfo = sList.find((s: any) => s.uf === uf);
+      const isSelected = sel?.uf === uf;
+      const isInActiveRegion = rf && stateInfo?.region === rf;
+
+      // 1. Regras de Borda (Topo da hierarquia visual)
+      const weight = isSelected ? 4 : isInActiveRegion ? 2.5 : 1;
+      const color = isSelected
+        ? 'var(--highlight)'
+        : isInActiveRegion
+          ? 'var(--map-border-active)'
+          : 'var(--map-border)';
+
+      // 2. Regras de Preenchimento (Invisível, mas ativo para cliques)
+      // Usamos 0.0001 em vez de 0 para garantir que o Leaflet registre eventos de mouse
+      let fillColor = 'transparent';
+      let fillOpacity = 0.0001;
 
       return {
-        fillColor: 'var(--bg-dark)',
-        weight: isSelected ? 3 : isInActiveRegion ? 2.5 : isHovered ? 1.5 : 1.2,
+        fillColor,
+        fillOpacity,
+        weight,
+        color,
         opacity: 1,
-        color: isSelected 
-          ? 'var(--highlight)' 
-          : isInActiveRegion 
-            ? (theme === 'dark' ? '#ffffff' : '#30363d')
-            : (theme === 'dark' ? '#444c56' : '#94a3b8'),
-        fillOpacity: isSelected ? 0.9 : (regionFilter ? (isInActiveRegion ? 0 : 0.85) : 0),
+        lineJoin: 'round' as const,
+        lineCap: 'round' as const,
       };
     },
-    [regionFilter, hoveredUf, theme],
+    [], // Estável, usa propsRef internamente
   );
 
   useEffect(() => {
@@ -344,15 +378,16 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
           searchFilter &&
           (layer.feature.properties.Estado.toLowerCase().includes(searchFilter.toLowerCase()) ||
             layer.feature.properties.SIGLA.toLowerCase() === searchFilter.toLowerCase());
+        const baseStyle = getStyle(layer.feature);
         layer.setStyle({
-          ...getStyle(layer.feature),
-          fillOpacity: isMatch ? 0.9 : getStyle(layer.feature).fillOpacity,
-          color: isMatch ? 'var(--highlight)' : getStyle(layer.feature).color,
-          weight: isMatch ? 3 : getStyle(layer.feature).weight,
+          ...baseStyle,
+          fillOpacity: isMatch && !regionFilter ? 0.9 : baseStyle.fillOpacity,
+          color: isMatch ? 'var(--highlight)' : baseStyle.color,
+          weight: isMatch ? 3 : baseStyle.weight,
         });
       }
     });
-  }, [selectedState, regionFilter, hoveredUf, getStyle, searchFilter]);
+  }, [selectedState, regionFilter, getStyle, searchFilter, theme]);
 
   // Zoom no mapa quando buscar um estado ou cidade
   useEffect(() => {
@@ -376,8 +411,8 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
     }
 
     // Tenta achar cidade em branches ou competitors
-    const branchMatch = branches.find(b => b.city.toLowerCase().includes(term));
-    const compMatch = competitors.find(c => c.city.toLowerCase().includes(term));
+    const branchMatch = branches.find((b: Branch) => b.city.toLowerCase().includes(term));
+    const compMatch = competitors.find((c: Competitor) => c.city.toLowerCase().includes(term));
     const location = branchMatch || compMatch;
 
     if (location) {
@@ -388,70 +423,119 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
   }, [searchFilter, branches, competitors]);
 
   // onEachState com deps vazias — lê tudo via refs, sem stale closures
-  const onEachState = useCallback((feature: any, layer: any) => {
-    const sigla = feature.properties.SIGLA;
+  const onEachState = useCallback(
+    (feature: any, layer: any) => {
+      const sigla = feature.properties.SIGLA;
 
-    layer.bindTooltip(
-      () => {
-        const stateInfo = statesRef.current.find(s => s.uf === sigla);
-        const name = `<strong>${stateInfo?.name || feature.properties.Estado}</strong>`;
+      layer.bindTooltip(
+        () => {
+          const stateInfo = propsRef.current.states.find((s: any) => s.uf === sigla);
+          const name = `<strong>${stateInfo?.name || feature.properties.Estado}</strong>`;
 
-        // Intelligence context
-        let extra = '';
-        const isPotActive = layersRef.current.find(l => l.id === 'potential')?.active;
-        const isDemActive = layersRef.current.find(l => l.id === 'demand')?.active;
+          // Intelligence context
+          let extra = '';
+          const isPotActive = propsRef.current.layers.find(
+            (l: any) => l.id === 'potential',
+          )?.active;
+          const isDemActive = propsRef.current.layers.find((l: any) => l.id === 'demand')?.active;
 
-        if (isPotActive) {
-          const score = marketPotentialRef.current.find(p => p.uf === sigla)?.score;
-          if (score !== undefined)
-            extra = `<br/><span style="color: var(--primary)">Potencial: ${score} pts</span>`;
-        } else if (isDemActive) {
-          const vol = demandRef.current.find(d => d.uf === sigla)?.volume;
-          if (vol !== undefined)
-            extra = `<br/><span style="color: #FF4500">Demanda: ${vol.toLocaleString('pt-BR')} un</span>`;
-        }
+          if (isPotActive) {
+            const score = propsRef.current.marketPotential.find((p: any) => p.uf === sigla)?.score;
+            if (score !== undefined)
+              extra = `<br/><span style="color: var(--primary)">Potencial: ${score} pts</span>`;
+          } else if (isDemActive) {
+            const vol = propsRef.current.demand.find((d: any) => d.uf === sigla)?.volume;
+            if (vol !== undefined)
+              extra = `<br/><span style="color: #FF4500">Demanda: ${vol.toLocaleString('pt-BR')} un</span>`;
+          }
 
-        return `<div>${name}${extra}</div>`;
-      },
-      { sticky: true, direction: 'top', permanent: false, className: 'custom-map-tooltip' },
-    );
+          return `<div>${name}${extra}</div>`;
+        },
+        { sticky: true, direction: 'top', permanent: false, className: 'custom-map-tooltip' },
+      );
 
-    layer.on({
-      click: (e: any) => {
-        if (e.originalEvent) e.originalEvent.stopPropagation();
-        layer.closeTooltip();
+      layer.on({
+        click: (e: any) => {
+          if (e.originalEvent) e.originalEvent.stopPropagation();
+          layer.closeTooltip();
 
-        if (selectedStateRef.current?.uf === sigla) {
-          onStateClickRef.current(null);
-          return;
-        }
+          if (propsRef.current.selectedState?.uf === sigla) {
+            propsRef.current.onStateClick(null);
+            return;
+          }
 
-        const stateData = statesRef.current.find(s => s.uf === sigla);
-        if (stateData) {
-          onStateClickRef.current({
-            ...stateData,
-            totalPopulation: feature.properties.Total,
-            men: feature.properties.Homens,
-            women: feature.properties.Mulheres,
-            urban: feature.properties.Urbana,
-            rural: feature.properties.Rural,
-            literacyRate: feature.properties.TX_Alfab,
+          const stateData = propsRef.current.states.find((s: any) => s.uf === sigla);
+          if (stateData) {
+            propsRef.current.onStateClick({
+              ...stateData,
+              totalPopulation: feature.properties.Total,
+              men: feature.properties.Homens,
+              women: feature.properties.Mulheres,
+              urban: feature.properties.Urbana,
+              rural: feature.properties.Rural,
+              literacyRate: feature.properties.TX_Alfab,
+            });
+          }
+        },
+        mouseover: (e: any) => {
+          const layer = e.target;
+          const baseStyle = getStyle(feature);
+          const { selectedState: sel, theme: t } = propsRef.current;
+          const isSelected = sel?.uf === feature.properties.SIGLA;
+
+          layer.setStyle({
+            weight: baseStyle.weight + 0.5,
+            color: isSelected ? 'var(--highlight)' : t === 'dark' ? '#ffffff' : '#000000',
+            fillColor: isSelected ? 'var(--highlight)' : 'transparent',
+            fillOpacity: 0.05, // Sutil feedback de que é clicável
           });
+
+          if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+          }
+        },
+        mouseout: (e: any) => {
+          const layer = e.target;
+          layer.setStyle(getStyle(feature));
+        },
+      });
+    },
+    [getStyle],
+  );
+
+  // Efeito adicional para garantir que todos os estilos do GeoJSON sejam atualizados
+  // quando o selectedState ou searchFilter mudar (o Leaflet não faz isso sozinho no GeoJSON)
+  useEffect(() => {
+    if (!geoJsonRef.current) return;
+    geoJsonRef.current.eachLayer((layer: any) => {
+      if (layer.feature) {
+        const baseStyle = getStyle(layer.feature);
+        const { selectedState: sel, searchFilter: sf } = propsRef.current;
+        const uf = layer.feature.properties.SIGLA;
+        const isSelected = sel?.uf === uf;
+        const isMatch =
+          sf &&
+          (layer.feature.properties.Estado.toLowerCase().includes(sf.toLowerCase()) ||
+            uf.toLowerCase() === sf.toLowerCase());
+
+        layer.setStyle({
+          ...baseStyle,
+          color: isSelected || isMatch ? 'var(--highlight)' : baseStyle.color,
+          weight: isSelected || isMatch ? 4 : baseStyle.weight,
+          fillOpacity: isMatch ? 0.1 : 0.0001,
+        });
+
+        if (isSelected || isMatch) {
+          layer.bringToFront();
         }
-      },
-      mouseover: (_e: any) => {
-        setHoveredUf(sigla);
-      },
-      mouseout: (_e: any) => {
-        setHoveredUf(null);
-      },
+      }
     });
-  }, []); // deps vazias — lê tudo via refs
+  }, [selectedState, regionFilter, theme, getStyle, searchFilter]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <MapLegend layers={layers} />
-      
+
       <MapContainer
         center={BRAZIL_CENTER}
         zoom={4}
@@ -462,6 +546,7 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
         zoomControl={false}
       >
         <ZoomControl position="bottomright" />
+        <MapInitializer />
         <MapEvents onClick={() => onStateClick(null)} />
         {theme === 'dark' ? (
           <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
@@ -470,12 +555,14 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
         )}
 
         {/* Prevent rendering intel layers until GeoJSON/Map is ready to avoid reference errors */}
+        {/* GeoJSON key que reage a tema e região para garantir re-render do CSS e handlers */}
         <GeoJSON
           key={`geojson-${regionFilter}-${theme}`}
           ref={geoJsonRef}
           data={brazilStates as any}
           style={getStyle}
           onEachFeature={onEachState}
+          pane="borderPane"
         />
 
         {geoJsonRef.current && (
@@ -488,9 +575,25 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
                 states={states}
               />
             )}
+            {isLayerActive('expansion') && (
+              <ExpansionZoneLayer
+                data={expansionZones}
+                statesGeoJson={brazilStates}
+                regionFilter={regionFilter}
+                states={states}
+                isPotentialActive={!!isLayerActive('potential')}
+              />
+            )}
             {isLayerActive('branches') && (
               <BranchLayer
                 data={branches}
+                regionFilter={regionFilter}
+                searchFilter={searchFilter}
+              />
+            )}
+            {isLayerActive('competitors') && (
+              <CompetitorLayer
+                data={competitors}
                 regionFilter={regionFilter}
                 searchFilter={searchFilter}
               />
@@ -501,22 +604,6 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
               regionFilter={regionFilter}
               active={!!isLayerActive('demand')}
             />
-            {isLayerActive('expansion') && (
-              <ExpansionZoneLayer
-                data={expansionZones}
-                statesGeoJson={brazilStates}
-                regionFilter={regionFilter}
-                states={states}
-                isPotentialActive={!!isLayerActive('potential')}
-              />
-            )}
-            {isLayerActive('competitors') && (
-              <CompetitorLayer
-                data={competitors}
-                regionFilter={regionFilter}
-                searchFilter={searchFilter}
-              />
-            )}
           </>
         )}
       </MapContainer>

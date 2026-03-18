@@ -1,34 +1,37 @@
 :root {
-  /* Default/Dark Theme */
-  --primary: #00d4aa;
-  --highlight: #ffd700;
-  --bg-dark: #0d1117;
-  --bg-card: #161b22;
-  --border: #30363d;
-  --text-main: #c9d1d9;
-  --text-dim: #8b949e;
-  --glass-bg: rgba(13, 17, 23, 0.45); /* More transparent for better glass effect */
-  --tooltip-bg: rgba(22, 27, 34, 0.85);
-  --map-overlay: rgba(13, 17, 23, 0.5);
-  --glow-primary: rgba(0, 212, 170, 0.15);
-  --shadow-main: 0 10px 30px rgba(0, 0, 0, 0.5);
-  --map-border: #ffffff;
+  /* Default/Dark Theme - Sleek Slate/Cyan */
+  --primary: #00f2c3;
+  --highlight: #00ffff; /* Electric Cyan for Selection - High contrast against data */
+  --bg-dark: #0b0e14;
+  --bg-card: #151921;
+  --border: #2d333b;
+  --text-main: #e6edf3;
+  --text-dim: #7d8590;
+  --glass-bg: rgba(11, 14, 20, 0.6);
+  --tooltip-bg: rgba(21, 25, 33, 0.9);
+  --map-overlay: rgba(11, 14, 20, 0.7);
+  --glow-primary: rgba(0, 242, 195, 0.15);
+  --shadow-main: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --map-border: rgba(255, 255, 255, 0.25);
+  --map-border-active: #ffffff;
 }
 
 [data-theme='light'] {
-  --primary: #00a383; /* Darker primary for contrast */
-  --highlight: #d97706; /* Much darker amber/yellow for contrast (amber-600) */
-  --bg-dark: #e2e8f0; /* Darker base for light mode (Tailwind slate-200) */
-  --bg-card: #f8fafc; /* Card slightly darker than pure white (slate-50) */
-  --border: #cbd5e1; /* Darker borders (slate-300) */
-  --text-main: #0f172a; /* Slate 900 for high-contrast reading */
-  --text-dim: #475569; /* Slate 600 for prominent secondary text */
-  --glass-bg: rgba(226, 232, 240, 0.45); /* Higher transparency for light glass effect */
-  --tooltip-bg: rgba(255, 255, 255, 0.85);
-  --map-overlay: rgba(226, 232, 240, 0.5);
-  --glow-primary: rgba(0, 163, 131, 0.15);
-  --shadow-main: 0 10px 30px rgba(0, 0, 0, 0.15);
-  --map-border: #000000;
+  /* Light Theme - Clean Slate/Emerald */
+  --primary: #059669;
+  --highlight: #d946ef; /* Vibrant Fuchsia for Selection - Unique in palette */
+  --bg-dark: #f1f5f9;
+  --bg-card: #ffffff;
+  --border: #cbd5e1;
+  --text-main: #0f172a;
+  --text-dim: #475569;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --tooltip-bg: rgba(255, 255, 255, 0.95);
+  --map-overlay: rgba(226, 232, 240, 0.6);
+  --glow-primary: rgba(5, 150, 105, 0.1);
+  --shadow-main: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --map-border: rgba(15, 23, 42, 0.2);
+  --map-border-active: #000000;
 }
 
 * {
