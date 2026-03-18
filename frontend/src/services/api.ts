@@ -23,8 +23,11 @@ export const fetchCompetitors = (region?: string | null, period?: string) =>
 export const fetchStates = (region?: string | null) => 
   api.get<ApiResponse<StateData[]>>('/states', { params: { region } });
 
-export const fetchSummary = (region?: string | null, period?: string) =>
-  api.get<ApiResponse<IntelligenceSummary>>('/intelligence/summary', { params: { region, period } });
+export const fetchSummary = (region?: string | null, period?: string, signal?: AbortSignal) =>
+  api.get<ApiResponse<IntelligenceSummary>>('/intelligence/summary', { 
+    params: { region, period },
+    signal
+  });
 
 export const fetchStateDetail = (uf: string) => 
   api.get<ApiResponse<StateData>>(`/states/${uf}`);

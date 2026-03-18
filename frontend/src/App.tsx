@@ -44,7 +44,7 @@ const App: React.FC = () => {
   }, [regionFilter, periodFilter, viewMode]);
 
   const { branches, marketPotential, demand, expansionZones, competitors, states, loading, error } =
-    useMapData(null, periodFilter);
+    useMapData(regionFilter, periodFilter);
 
   const toggleLayer = (id: string) => {
     setLayers(prev => prev.map(l => (l.id === id ? { ...l, active: !l.active } : l)));
@@ -58,7 +58,7 @@ const App: React.FC = () => {
     if (!isMobile) setIsSidebarOpen(false);
   }, [isMobile]);
 
-  if (error)
+  if (error && states.length === 0)
     return (
       <div
         style={{
@@ -77,6 +77,9 @@ const App: React.FC = () => {
         <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>{error}</span>
       </div>
     );
+
+  const isInitialLoading = loading && states.length === 0;
+  const isUpdating = loading && states.length > 0;
 
   return (
     <div
@@ -186,7 +189,7 @@ const App: React.FC = () => {
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
-        {loading && (
+        {isInitialLoading && (
           <div
             style={{
               position: 'absolute',
@@ -227,6 +230,43 @@ const App: React.FC = () => {
             <div style={{ color: 'var(--text-main)', fontSize: '1rem', letterSpacing: 1 }}>
               Carregando inteligência de mercado...
             </div>
+          </div>
+        )}
+
+        {isUpdating && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 3,
+              zIndex: 3000,
+              backgroundColor: 'var(--primary)',
+              boxShadow: '0 0 10px var(--glow-primary)',
+              animation: 'pulse-ring 1s infinite',
+            }}
+          />
+        )}
+
+        {error && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 24,
+              right: 24,
+              zIndex: 3000,
+              backgroundColor: 'rgba(239, 68, 68, 0.9)',
+              color: 'white',
+              padding: '12px 20px',
+              borderRadius: 8,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              animation: 'fadeIn 0.3s ease-out'
+            }}
+          >
+            ⚠️ {error}
           </div>
         )}
         {viewMode === 'map' ? (

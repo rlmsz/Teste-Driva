@@ -16,11 +16,12 @@ export const useMapData = (region?: string | null, period?: string) => {
 
   useEffect(() => {
     let isMounted = true;
+    const controller = new AbortController();
 
     const loadData = async () => {
       try {
         setState(prev => ({ ...prev, loading: true }));
-        const response = await api.fetchSummary(region, period);
+        const response = await api.fetchSummary(region, period, controller.signal);
         
         if (isMounted) {
           const { data } = response.data;
@@ -30,15 +31,15 @@ export const useMapData = (region?: string | null, period?: string) => {
             error: null,
           });
         }
-      } catch (err) {
-        if (isMounted) {
-          setState(prev => ({ 
-            ...prev, 
-            error: 'Falha ao carregar dados consolidados',
-            loading: false 
-          }));
-          console.error(err);
-        }
+      } catch (err: any) {
+        if (!isMounted || err?.name === 'CanceledError' || err?.name === 'AbortError') return;
+
+        setState(prev => ({ 
+          ...prev, 
+          error: 'Falha ao carregar dados consolidados',
+          loading: false 
+        }));
+        console.error(err);
       }
     };
 
@@ -46,6 +47,7 @@ export const useMapData = (region?: string | null, period?: string) => {
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
   }, [region, period]);
 
