@@ -31,10 +31,8 @@ interface CompetitorLayerProps {
 
 const CompetitorLayer: React.FC<CompetitorLayerProps> = ({ data, regionFilter, searchFilter }) => {
   const filtered = data.filter(c => {
-    const term = searchFilter.toLowerCase();
-    const matchesSearch = !term || c.name.toLowerCase().includes(term) || c.city.toLowerCase().includes(term);
     const matchesRegion = !regionFilter || UF_REGION[c.uf] === regionFilter;
-    return matchesSearch && matchesRegion;
+    return matchesRegion;
   });
 
   return (

@@ -31,10 +31,8 @@ interface BranchLayerProps {
 
 const BranchLayer: React.FC<BranchLayerProps> = ({ data, regionFilter, searchFilter }) => {
   const filtered = data.filter(b => {
-    const term = searchFilter.toLowerCase();
-    const matchesSearch = !term || b.name.toLowerCase().includes(term) || b.city.toLowerCase().includes(term);
     const matchesRegion = !regionFilter || UF_REGION[b.uf] === regionFilter;
-    return matchesSearch && matchesRegion;
+    return matchesRegion;
   });
 
   return (
