@@ -259,21 +259,19 @@ const MapEvents = ({ onClick }: { onClick: () => void }) => {
   return null;
 };
 
-// Componente para inicializar Map Panes customs (precisa estar dentro do MapContainer)
-const MapInitializer = () => {
+// Component para inicializar Map Panes customs (precisa estar dentro do MapContainer)
+const MapInitializer = ({ onReady }: { onReady: () => void }) => {
   const map = useMap();
-  const paneCreated = useRef(false);
 
   useEffect(() => {
-    if (!paneCreated.current && map) {
+    if (map) {
       if (!map.getPane('borderPane')) {
         const pane = map.createPane('borderPane');
         pane.style.zIndex = '550';
-        // Removido pointerEvents: 'none' para que os estados no topo possam ser clicados
       }
-      paneCreated.current = true;
+      onReady();
     }
-  }, [map]);
+  }, [map, onReady]);
 
   return null;
 };
@@ -295,6 +293,7 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
   onStateClick,
 }) => {
   const { theme } = useTheme();
+  const [isMapReady, setIsMapReady] = React.useState(false);
 
   const isLayerActive = (id: string) => layers.find((l: any) => l.id === id)?.active;
   const geoJsonRef = useRef<any>(null);
@@ -574,7 +573,7 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
         zoomControl={false}
       >
         <ZoomControl position="bottomright" />
-        <MapInitializer />
+        <MapInitializer onReady={() => setIsMapReady(true)} />
         <MapEvents onClick={() => onStateClick(null)} />
         {theme === 'dark' ? (
           <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
@@ -582,26 +581,30 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
           <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
         )}
 
-        {/* Camada de Halo (Brilho/Sombra de contraste) */}
-        <GeoJSON
-          key={`geojson-halo-${regionFilter}-${theme}`}
-          data={brazilStates as any}
-          style={getHaloStyle}
-          pane="borderPane"
-          interactive={false}
-        />
+        {isMapReady && (
+          <>
+            {/* Camada de Halo (Brilho/Sombra de contraste) */}
+            <GeoJSON
+              key={`geojson-halo-${regionFilter}-${theme}`}
+              data={brazilStates as any}
+              style={getHaloStyle}
+              pane="borderPane"
+              interactive={false}
+            />
 
-        {/* Camada de Borda Principal */}
-        <GeoJSON
-          key={`geojson-border-${regionFilter}-${theme}`}
-          ref={geoJsonRef}
-          data={brazilStates as any}
-          style={getStyle}
-          onEachFeature={onEachState}
-          pane="borderPane"
-        />
+            {/* Camada de Borda Principal */}
+            <GeoJSON
+              key={`geojson-border-${regionFilter}-${theme}`}
+              ref={geoJsonRef}
+              data={brazilStates as any}
+              style={getStyle}
+              onEachFeature={onEachState}
+              pane="borderPane"
+            />
+          </>
+        )}
 
-        {geoJsonRef.current && (
+        {isMapReady && geoJsonRef.current && (
           <>
             {isLayerActive('potential') && (
               <MarketHeatLayer

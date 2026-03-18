@@ -13,18 +13,18 @@ interface DemandBubbleLayerProps {
 
 const DemandBubbleLayer: React.FC<DemandBubbleLayerProps> = ({ data, states, regionFilter, active }) => {
   const map = useMap();
-  const paneCreated = useRef(false);
+  const [paneReady, setPaneReady] = React.useState(false);
 
   useEffect(() => {
-    if (!paneCreated.current && !map.getPane('demandBubblePane')) {
+    if (!map.getPane('demandBubblePane')) {
       const pane = map.createPane('demandBubblePane');
       pane.style.zIndex = '500';
       pane.style.pointerEvents = 'auto';
-      paneCreated.current = true;
     }
+    setPaneReady(true);
   }, [map]);
 
-  if (!active) return null;
+  if (!active || !paneReady) return null;
 
   // Filtragem básica
   const filteredData = regionFilter 
