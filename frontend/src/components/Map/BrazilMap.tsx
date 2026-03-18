@@ -326,6 +326,7 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
 
   const isLayerActive = (id: string) => layers.find((l: any) => l.id === id)?.active;
   const geoJsonRef = useRef<any>(null);
+  const haloJsonRef = useRef<any>(null);
 
   const getStyle = useCallback(
     (feature: any) => {
@@ -391,24 +392,6 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
     [],
   );
 
-  useEffect(() => {
-    if (!geoJsonRef.current) return;
-    geoJsonRef.current.getLayers().forEach((layer: any) => {
-      if (layer.feature) {
-        const isMatch =
-          searchFilter &&
-          (layer.feature.properties.Estado.toLowerCase().includes(searchFilter.toLowerCase()) ||
-            layer.feature.properties.SIGLA.toLowerCase() === searchFilter.toLowerCase());
-        const baseStyle = getStyle(layer.feature);
-        layer.setStyle({
-          ...baseStyle,
-          fillOpacity: isMatch && !regionFilter ? 0.9 : baseStyle.fillOpacity,
-          color: isMatch ? 'var(--highlight)' : baseStyle.color,
-          weight: isMatch ? 3 : baseStyle.weight,
-        });
-      }
-    });
-  }, [selectedState, regionFilter, getStyle, searchFilter, theme]);
 
   // Zoom no mapa quando buscar um estado ou cidade
   useEffect(() => {
@@ -527,31 +510,42 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
   // Efeito adicional para garantir que todos os estilos do GeoJSON sejam atualizados
   // quando o selectedState ou searchFilter mudar (o Leaflet não faz isso sozinho no GeoJSON)
   useEffect(() => {
-    if (!geoJsonRef.current) return;
-    geoJsonRef.current.eachLayer((layer: any) => {
-      if (layer.feature) {
-        const baseStyle = getStyle(layer.feature);
-        const { selectedState: sel, searchFilter: sf } = propsRef.current;
-        const uf = layer.feature.properties.SIGLA;
-        const isSelected = sel?.uf === uf;
-        const isMatch =
-          sf &&
-          (layer.feature.properties.Estado.toLowerCase().includes(sf.toLowerCase()) ||
-            uf.toLowerCase() === sf.toLowerCase());
+    // -------------------------------------------------------------------------
+    // Function to update style of a specific GeoJSON ref
+    // -------------------------------------------------------------------------
+    const syncStyles = (ref: any, styleFn: (f: any) => any) => {
+      if (!ref.current) return;
+      ref.current.eachLayer((layer: any) => {
+        if (layer.feature) {
+          const baseStyle = styleFn(layer.feature);
+          const { selectedState: sel, searchFilter: sf } = propsRef.current;
+          const uf = layer.feature.properties.SIGLA;
+          const isSelected = sel?.uf === uf;
+          const isMatch = sf && 
+            (layer.feature.properties.Estado.toLowerCase().includes(sf.toLowerCase()) ||
+             uf.toLowerCase() === sf.toLowerCase());
 
-        layer.setStyle({
-          ...baseStyle,
-          color: isSelected || isMatch ? 'var(--highlight)' : baseStyle.color,
-          weight: isSelected || isMatch ? 4 : baseStyle.weight,
-          fillOpacity: isMatch ? 0.1 : 0.0001,
-        });
+          // For the main border layer, we also apply search/selection highlights
+          // For the halo layer, baseStyle already includes calculations
+          const finalStyle = (ref === geoJsonRef) ? {
+            ...baseStyle,
+            color: isSelected || isMatch ? 'var(--highlight)' : baseStyle.color,
+            weight: isSelected || isMatch ? 4 : baseStyle.weight,
+            fillOpacity: isMatch ? 0.1 : 0.0001,
+          } : baseStyle;
 
-        if (isSelected || isMatch) {
-          layer.bringToFront();
+          layer.setStyle(finalStyle);
+
+          if ((ref === geoJsonRef) && (isSelected || isMatch)) {
+            layer.bringToFront();
+          }
         }
-      }
-    });
-  }, [selectedState, regionFilter, theme, getStyle, searchFilter]);
+      });
+    };
+
+    syncStyles(haloJsonRef, getHaloStyle);
+    syncStyles(geoJsonRef, getStyle);
+  }, [selectedState, regionFilter, theme, states, searchFilter, getStyle, getHaloStyle]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -580,6 +574,7 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
             {/* Camada de Halo (Brilho/Sombra de contraste) */}
             <GeoJSON
               key={`geojson-halo-${regionFilter}-${theme}`}
+              ref={haloJsonRef}
               data={brazilStates as any}
               style={getHaloStyle}
               pane="borderPane"
