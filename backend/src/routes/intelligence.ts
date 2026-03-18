@@ -29,7 +29,7 @@ router.get('/summary', (req: Request, res: Response) => {
   res.json({ 
     data: response,
     meta: {
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString() 
     }
   });
 });
