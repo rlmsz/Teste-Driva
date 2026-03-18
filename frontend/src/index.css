@@ -12,8 +12,9 @@
   --map-overlay: rgba(11, 14, 20, 0.7);
   --glow-primary: rgba(0, 242, 195, 0.15);
   --shadow-main: 0 12px 40px rgba(0, 0, 0, 0.6);
-  --map-border: rgba(255, 255, 255, 0.25);
+  --map-border: rgba(255, 255, 255, 0.45);
   --map-border-active: #ffffff;
+  --map-border-halo: rgba(0, 0, 0, 0.6);
 }
 
 [data-theme='light'] {
@@ -30,8 +31,9 @@
   --map-overlay: rgba(226, 232, 240, 0.6);
   --glow-primary: rgba(5, 150, 105, 0.1);
   --shadow-main: 0 12px 40px rgba(0, 0, 0, 0.1);
-  --map-border: rgba(15, 23, 42, 0.2);
+  --map-border: rgba(15, 23, 42, 0.4);
   --map-border-active: #000000;
+  --map-border-halo: rgba(255, 255, 255, 0.5);
 }
 
 * {

@@ -12,13 +12,22 @@ interface RegionPanelProps {
   onClose: () => void;
 }
 
-const RegionPanel: React.FC<RegionPanelProps> = ({ state, allStates, marketPotential, demand, onClose }) => {
-  const currentPotential = marketPotential.find(p => p.uf === state.uf)?.score ?? state.potentialScore;
+const RegionPanel: React.FC<RegionPanelProps> = ({
+  state,
+  allStates,
+  marketPotential,
+  demand,
+  onClose,
+}) => {
+  const currentPotential =
+    marketPotential.find(p => p.uf === state.uf)?.score ?? state.potentialScore;
   const currentDemand = demand.find(d => d.uf === state.uf)?.volume ?? 0;
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <h2 className={styles.title}>{state.name} ({state.uf})</h2>
+        <h2 className={styles.title}>
+          {state.name} ({state.uf})
+        </h2>
         <button className={styles.closeButton} onClick={onClose}>
           <X size={24} />
         </button>
@@ -31,7 +40,9 @@ const RegionPanel: React.FC<RegionPanelProps> = ({ state, allStates, marketPoten
             <div className={styles.statLabel}>
               <Users size={12} style={{ marginRight: 4 }} /> População
             </div>
-            <div className={styles.statValue}>{(state.totalPopulation || state.population).toLocaleString('pt-BR')}</div>
+            <div className={styles.statValue}>
+              {(state.totalPopulation || state.population).toLocaleString('pt-BR')}
+            </div>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statLabel}>
@@ -39,10 +50,27 @@ const RegionPanel: React.FC<RegionPanelProps> = ({ state, allStates, marketPoten
             </div>
             <div className={styles.statValue}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ flex: 1, height: '6px', backgroundColor: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ width: `${currentPotential}%`, height: '100%', backgroundColor: 'var(--primary)', boxShadow: '0 0 8px var(--glow-primary)' }} />
+                <div
+                  style={{
+                    flex: 1,
+                    height: '6px',
+                    backgroundColor: 'var(--border)',
+                    borderRadius: '3px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${currentPotential}%`,
+                      height: '100%',
+                      backgroundColor: 'var(--primary)',
+                      boxShadow: '0 0 8px var(--glow-primary)',
+                    }}
+                  />
                 </div>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>{currentPotential}/100</span>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>
+                  {currentPotential}/100
+                </span>
               </div>
             </div>
           </div>
@@ -92,17 +120,28 @@ const RegionPanel: React.FC<RegionPanelProps> = ({ state, allStates, marketPoten
 
         <div className={styles.sectionTitle}>Comparativo Regional</div>
         <div className={styles.chartContainer}>
-          <RegionChart 
-            state={state} 
-            allStates={allStates} 
+          <RegionChart
+            state={state}
+            allStates={allStates}
             marketPotential={marketPotential}
             demand={demand}
           />
         </div>
 
-        <div style={{ marginTop: 24, padding: 16, backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', color: 'var(--text-dim)' }}>
-          <strong>Nota de Análise:</strong> O estado de {state.name} apresenta um score de potencial de {state.potentialScore}, 
-          sendo classificado na região {state.region}. Atualmente possuímos {state.ownStores} filiais operando nesta UF.
+        <div
+          style={{
+            marginTop: 24,
+            padding: 16,
+            backgroundColor: 'var(--bg-dark)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            fontSize: '0.85rem',
+            color: 'var(--text-dim)',
+          }}
+        >
+          <strong>Nota de Análise:</strong> O estado de {state.name} apresenta um score de potencial
+          de {state.potentialScore}, sendo classificado na região {state.region}. Atualmente
+          possuímos {state.ownStores} filiais operando nesta UF.
         </div>
       </div>
     </div>

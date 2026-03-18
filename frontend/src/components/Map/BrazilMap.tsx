@@ -338,14 +338,18 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
 
   const getStyle = useCallback(
     (feature: any) => {
-      const { states: sList, selectedState: sel, regionFilter: rf, theme: t } = propsRef.current;
+      const { states: sList, selectedState: sel, regionFilter: rf, layers: activeLayers } = propsRef.current;
       const uf = feature.properties.SIGLA;
       const stateInfo = sList.find((s: any) => s.uf === uf);
       const isSelected = sel?.uf === uf;
       const isInActiveRegion = rf && stateInfo?.region === rf;
+      
+      // Se houver qualquer camada de dados ativa, aumentamos um pouco o peso base
+      const hasDataLayer = activeLayers.some(l => l.active && ['potential', 'demand', 'expansion'].includes(l.id));
 
       // 1. Regras de Borda (Topo da hierarquia visual)
-      const weight = isSelected ? 4 : isInActiveRegion ? 2.5 : 1;
+      const baseWeight = hasDataLayer ? 1.5 : 1;
+      const weight = isSelected ? 4 : isInActiveRegion ? 3 : baseWeight;
       const color = isSelected
         ? 'var(--highlight)'
         : isInActiveRegion
@@ -353,13 +357,9 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
           : 'var(--map-border)';
 
       // 2. Regras de Preenchimento (Invisível, mas ativo para cliques)
-      // Usamos 0.0001 em vez de 0 para garantir que o Leaflet registre eventos de mouse
-      let fillColor = 'transparent';
-      let fillOpacity = 0.0001;
-
       return {
-        fillColor,
-        fillOpacity,
+        fillColor: 'transparent',
+        fillOpacity: 0.0001,
         weight,
         color,
         opacity: 1,
@@ -367,7 +367,35 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
         lineCap: 'round' as const,
       };
     },
-    [], // Estável, usa propsRef internamente
+    [],
+  );
+
+  const getHaloStyle = useCallback(
+    (feature: any) => {
+      const { selectedState: sel, regionFilter: rf, states: sList, layers: activeLayers } = propsRef.current;
+      const uf = feature.properties.SIGLA;
+      const stateInfo = sList.find((s: any) => s.uf === uf);
+      const isSelected = sel?.uf === uf;
+      const isInActiveRegion = rf && stateInfo?.region === rf;
+      const hasDataLayer = activeLayers.some(l => l.active && ['potential', 'demand', 'expansion'].includes(l.id));
+
+      if (!hasDataLayer && !isSelected && !isInActiveRegion) return { opacity: 0, fillOpacity: 0, weight: 0 };
+
+      const baseWeight = hasDataLayer ? 1.5 : 1;
+      const weight = isSelected ? 4 : isInActiveRegion ? 3 : baseWeight;
+
+      return {
+        fillColor: 'transparent',
+        fillOpacity: 0,
+        weight: weight + 1.5, // Halo é ligeiramente mais grosso que a borda real
+        color: 'var(--map-border-halo)',
+        opacity: 0.8,
+        lineJoin: 'round' as const,
+        lineCap: 'round' as const,
+        pointerEvents: 'none',
+      };
+    },
+    [],
   );
 
   useEffect(() => {
@@ -554,10 +582,18 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
           <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
         )}
 
-        {/* Prevent rendering intel layers until GeoJSON/Map is ready to avoid reference errors */}
-        {/* GeoJSON key que reage a tema e região para garantir re-render do CSS e handlers */}
+        {/* Camada de Halo (Brilho/Sombra de contraste) */}
         <GeoJSON
-          key={`geojson-${regionFilter}-${theme}`}
+          key={`geojson-halo-${regionFilter}-${theme}`}
+          data={brazilStates as any}
+          style={getHaloStyle}
+          pane="borderPane"
+          interactive={false}
+        />
+
+        {/* Camada de Borda Principal */}
+        <GeoJSON
+          key={`geojson-border-${regionFilter}-${theme}`}
           ref={geoJsonRef}
           data={brazilStates as any}
           style={getStyle}
