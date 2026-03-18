@@ -295,10 +295,6 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
   const { theme } = useTheme();
   const [isMapReady, setIsMapReady] = React.useState(false);
 
-  const isLayerActive = (id: string) => layers.find((l: any) => l.id === id)?.active;
-  const geoJsonRef = useRef<any>(null);
-
-  // --- Props Ref para handlers estáveis ---
   const propsRef = useRef({
     selectedState,
     onStateClick,
@@ -311,19 +307,12 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
     searchFilter,
   });
 
-  useEffect(() => {
-    propsRef.current = {
-      selectedState,
-      onStateClick,
-      states,
-      marketPotential,
-      demand,
-      layers,
-      theme,
-      regionFilter,
-      searchFilter,
-    };
-  }, [
+  // ---------------------------------------------------------------------------
+  // CRITICAL: Update ref DURING render to ensure that when sub-components (like GeoJSON) 
+  // remount or call styles during the mount/paint phase, they see the absolute latest props.
+  // This fix solves the issue where regional filter borders only worked "rarely" due to race conditions.
+  // ---------------------------------------------------------------------------
+  propsRef.current = {
     selectedState,
     onStateClick,
     states,
@@ -333,7 +322,10 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
     theme,
     regionFilter,
     searchFilter,
-  ]);
+  };
+
+  const isLayerActive = (id: string) => layers.find((l: any) => l.id === id)?.active;
+  const geoJsonRef = useRef<any>(null);
 
   const getStyle = useCallback(
     (feature: any) => {
@@ -341,10 +333,11 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
       const uf = feature.properties.SIGLA;
       const stateInfo = sList.find((s: any) => s.uf === uf);
       const isSelected = sel?.uf === uf;
-      const isInActiveRegion = rf && stateInfo?.region === rf;
+      const isInActiveRegion = rf && stateInfo?.region && 
+        stateInfo.region.toLowerCase().trim() === rf.toLowerCase().trim();
       
       // Se houver qualquer camada de dados ativa, aumentamos um pouco o peso base
-      const hasDataLayer = activeLayers.some(l => l.active && ['potential', 'demand', 'expansion'].includes(l.id));
+      const hasDataLayer = activeLayers.some((l: any) => l.active && ['potential', 'demand', 'expansion'].includes(l.id));
 
       // 1. Regras de Borda (Topo da hierarquia visual)
       const baseWeight = hasDataLayer ? 1.5 : 1;
@@ -375,8 +368,9 @@ const BrazilMap: React.FC<BrazilMapProps> = ({
       const uf = feature.properties.SIGLA;
       const stateInfo = sList.find((s: any) => s.uf === uf);
       const isSelected = sel?.uf === uf;
-      const isInActiveRegion = rf && stateInfo?.region === rf;
-      const hasDataLayer = activeLayers.some(l => l.active && ['potential', 'demand', 'expansion'].includes(l.id));
+      const isInActiveRegion = rf && stateInfo?.region && 
+        stateInfo.region.toLowerCase().trim() === rf.toLowerCase().trim();
+      const hasDataLayer = activeLayers.some((l: any) => l.active && ['potential', 'demand', 'expansion'].includes(l.id));
 
       if (!hasDataLayer && !isSelected && !isInActiveRegion) return { opacity: 0, fillOpacity: 0, weight: 0 };
 
